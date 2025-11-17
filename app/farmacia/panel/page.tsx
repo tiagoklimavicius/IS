@@ -374,7 +374,7 @@ export default function FarmaciaPanelPage() {
                   <h3 className="text-lg font-semibold">Historial ({completedOrders.length})</h3>
                   <div className="space-y-4">
                     {completedOrders.map((order) => (
-                      <OrderRow key={order.id} order={order} onUpdateStatus={updateOrderStatus} isBusy={false} disabledActions />
+                      <OrderRow key={order.id} order={order} onUpdateStatus={updateOrderStatus} isBusy={pendingOrderId === order.id} disabledActions={true} />
                     ))}
                   </div>
                 </div>

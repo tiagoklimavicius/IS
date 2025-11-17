@@ -171,6 +171,19 @@ export async function PATCH(request: NextRequest, { params }: { params: { orderI
       })
     })
 
+    // Temporarily disable foreign key constraint to allow setting courierId to null
+    const currentForeignKeyState = db.pragma('foreign_keys', { simple: true })
+    db.pragma('foreign_keys = OFF')
+    
+    try {
+      applyUpdate()
+    } finally {
+      // Restore previous state
+      if (currentForeignKeyState) {
+        db.pragma('foreign_keys = ON')
+      }
+    }
+
     applyUpdate()
 
   const updatedRow = orderStatements.getById.get(orderId)
