@@ -61,7 +61,6 @@ export async function GET(request: NextRequest) {
           pharmacySlug,
           pharmacyName: item.pharmacyName || pharmacySlug,
           price: item.precio,
-          discountedPrice: null,
           stock: item.stock,
           inStock: item.stock > 0,
           lastUpdated: item.lastUpdated,

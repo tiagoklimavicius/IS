@@ -137,7 +137,7 @@ export function MedicationCardWithPharmacies({ medication }: MedicationCardWithP
         const fallback =
           fallbackPharmacyMap.get(price.pharmacyId) ||
           (price.pharmacySlug ? fallbackPharmacyMap.get(price.pharmacySlug) : undefined)
-        const displayedPrice = price.discountedPrice ?? price.price
+        const displayedPrice = price.price
         const stateStock = pharmacyStocks[price.pharmacyId]
         const fallbackStock = normalizeStockValue(price.stock) ?? 0
         const resolvedStock = stateStock !== undefined ? stateStock : fallbackStock
@@ -156,7 +156,7 @@ export function MedicationCardWithPharmacies({ medication }: MedicationCardWithP
           isOpen: price.isOpen ?? fallback?.isOpen ?? false,
           originalPrice: price.price,
           displayedPrice,
-          hasDiscount: typeof price.discountedPrice === "number" && price.discountedPrice !== price.price,
+          hasDiscount: false,
           stock,
           priceData: {
             ...price,

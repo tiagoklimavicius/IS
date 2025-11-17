@@ -127,7 +127,7 @@ export function OrderForm({ medication, pharmacyPrice, pharmacyName, deliveryFee
   })()
 
   const effectiveDeliveryFee = pharmacyCoordinate && deliveryCoordinate ? deliveryQuote.fee : fallbackDeliveryFee
-  const baseUnitPrice = pharmacyPrice.discountedPrice ?? pharmacyPrice.price
+  const baseUnitPrice = pharmacyPrice.price
   const finalUnitPrice = baseUnitPrice
   const subtotal = finalUnitPrice * formData.quantity
   const total = subtotal + effectiveDeliveryFee

@@ -3,7 +3,6 @@ export interface ClientMedicationPrice {
   pharmacySlug: string
   pharmacyName: string
   price: number
-  discountedPrice?: number | null
   stock: number
   inStock: boolean
   lastUpdated: string

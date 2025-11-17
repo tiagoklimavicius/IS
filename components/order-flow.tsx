@@ -117,7 +117,7 @@ export function OrderFlow({ medication }: OrderFlowProps) {
 
   const getPharmacyPrice = (pharmacyId: string) => {
     const priceInfo = medication.prices.find((p) => p.pharmacyId === pharmacyId)
-    return priceInfo?.discountedPrice || priceInfo?.price || 0
+    return priceInfo?.price || 0
   }
 
   if (step === "select-pharmacy") {
@@ -198,11 +198,6 @@ export function OrderFlow({ medication }: OrderFlowProps) {
 
                       <div className="text-right space-y-1">
                         <div className="text-2xl font-bold text-primary">${price.toLocaleString()}</div>
-                        {priceInfo?.discountedPrice && (
-                          <div className="text-sm text-muted-foreground line-through">
-                            ${priceInfo.price.toLocaleString()}
-                          </div>
-                        )}
                         <Badge variant="secondary" className="text-xs">
                           En stock
                         </Badge>

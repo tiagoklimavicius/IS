@@ -12,7 +12,7 @@ import type { ClientMedication, ClientMedicationPrice } from "@/lib/types/client
 const fallbackCategories = ["Antibioticos", "Cardiovasculares", "Antidiabeticos", "Gastroenterologia", "Endocrinologia"]
 
 const createDefaultFilters = (): FilterState => ({
-  maxPrice: 10000,
+  maxPrice: 100000,
 })
 
 export function MedicationCatalog() {
@@ -63,7 +63,7 @@ export function MedicationCatalog() {
   }, [medications])
 
   const filteredMedications = useMemo(() => {
-    const results: Array<{ medication: ClientMedication; minAvailablePrice: number }> = []
+    const results: Array<{ medication: ClientMedication; minAvailablePrice: number; minFinalPrice: number }> = []
     const normalizedSearch = searchTerm.trim().toLowerCase()
 
     medications.forEach((medication) => {
@@ -78,19 +78,32 @@ export function MedicationCatalog() {
       if (!matchesSearch) return
 
       const minAvailablePrice = medication.prices.reduce((best, price) => {
-        const effectivePrice = price.discountedPrice ?? price.price
-        return effectivePrice < best ? effectivePrice : best
+        return price.price < best ? price.price : best
       }, Number.POSITIVE_INFINITY)
 
-      if (!Number.isFinite(minAvailablePrice) || minAvailablePrice > filters.maxPrice) return
+      // Usa el precio base sin descuentos ni seguros
+      const minFinalPrice = minAvailablePrice
 
-      results.push({ medication, minAvailablePrice })
+      // Debug: imprime comparación entre precio final mínimo y filtro
+      try {
+        // eslint-disable-next-line no-console
+        console.debug(
+          `[PriceFilter] med=${medication.id} name=${medication.name} minFinal=${minFinalPrice} (${formatPrice(minFinalPrice)}) maxFilter=${filters.maxPrice} (${formatPrice(filters.maxPrice)}) included=${Number.isFinite(minFinalPrice) && minFinalPrice <= filters.maxPrice}`,
+        )
+      } catch (e) {
+        // ignore logging errors in environments without console formatting
+      }
+
+      // Si no hay precio válido o el mejor precio final excede el filtro, excluir
+      if (!Number.isFinite(minFinalPrice) || minFinalPrice > filters.maxPrice) return
+
+      results.push({ medication, minAvailablePrice, minFinalPrice })
     })
 
     const sorted = results.sort((a, b) => {
       switch (sortBy) {
         case "price":
-          return a.minAvailablePrice - b.minAvailablePrice
+          return a.minFinalPrice - b.minFinalPrice
         case "category":
           return a.medication.category.localeCompare(b.medication.category)
         default:
@@ -114,8 +127,7 @@ export function MedicationCatalog() {
       const pharmacyId = (price.pharmacyId ?? "").toLowerCase()
       const pharmacySlug = (price.pharmacySlug ?? "").toLowerCase()
       const basePrice = Number.isFinite(price.price) ? price.price : 0
-      const discounted = price.discountedPrice ?? null
-      return `${pharmacyId}::${pharmacySlug}::${basePrice}::${discounted ?? "null"}`
+      return `${pharmacyId}::${pharmacySlug}::${basePrice}`
     }
 
     filteredMedications.forEach((medication) => {
@@ -161,8 +173,14 @@ export function MedicationCatalog() {
     return Array.from(groups.values()).map((entry) => entry.medication)
   }, [filteredMedications])
 
+  const medicationsWithStock = useMemo(() => {
+    return groupedMedications.filter((medication) => {
+      return medication.prices.some((price) => price.inStock)
+    })
+  }, [groupedMedications])
+
   const activeFiltersCount = useMemo(() => {
-    return filters.maxPrice < 10000 ? 1 : 0
+    return filters.maxPrice < 100000 ? 1 : 0
   }, [filters.maxPrice])
 
   const handleResetFilters = () => {
@@ -239,7 +257,7 @@ export function MedicationCatalog() {
           ) : loadError ? (
             <p className="text-destructive">No se pudo cargar el catalogo: {loadError}</p>
           ) : (
-            <p className="text-muted-foreground">Mostrando {groupedMedications.length} medicamentos</p>
+            <p className="text-muted-foreground">Mostrando {medicationsWithStock.length} medicamentos</p>
           )}
         </div>
 
@@ -254,7 +272,7 @@ export function MedicationCatalog() {
           </div>
         ) : groupedMedications.length > 0 ? (
           <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6">
-            {groupedMedications.map((medication) => (
+            {medicationsWithStock.map((medication) => (
               <MedicationCardWithPharmacies key={medication.id} medication={medication} />
             ))}
           </div>

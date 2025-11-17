@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
+import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Filter, X } from "lucide-react"
-import { formatPrice } from "@/lib/utils/price-calculator"
 import type { ClientPharmacyMeta } from "@/lib/types/client-medication"
 
 interface AdvancedFiltersProps {
@@ -36,13 +36,20 @@ export function AdvancedFilters({ onFiltersChange, currentFilters, pharmacies }:
 
   const clearAllFilters = () => {
     const defaultFilters: FilterState = {
-      maxPrice: 10000,
+      maxPrice: 30000,
     }
     setLocalFilters(defaultFilters)
     onFiltersChange(defaultFilters)
   }
 
-  const activeFiltersCount = localFilters.maxPrice < 10000 ? 1 : 0
+  const activeFiltersCount = localFilters.maxPrice < 30000 ? 1 : 0
+
+  const handleManualPriceInput = (value: string) => {
+    const numValue = Number(value)
+    if (!isNaN(numValue) && numValue > 0) {
+      handleFilterChange("maxPrice", numValue)
+    }
+  }
 
   return (
     <Sheet>
@@ -71,13 +78,28 @@ export function AdvancedFilters({ onFiltersChange, currentFilters, pharmacies }:
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2">
-                <Label className="text-sm">Máximo: {formatPrice(localFilters.maxPrice)}</Label>
+                <Label className="text-sm">Máximo: ${localFilters.maxPrice}</Label>
                 <Slider
                   value={[localFilters.maxPrice]}
                   onValueChange={([value]) => handleFilterChange("maxPrice", value)}
-                  max={10000}
-                  min={500}
-                  step={500}
+                  max={30000}
+                  min={1}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="price-input" className="text-sm">
+                  O ingresa el valor manualmente:
+                </Label>
+                <Input
+                  id="price-input"
+                  type="number"
+                  min="1"
+                  max="30000"
+                  value={localFilters.maxPrice}
+                  onChange={(e) => handleManualPriceInput(e.target.value)}
+                  placeholder="Ej: 5000"
                   className="w-full"
                 />
               </div>
